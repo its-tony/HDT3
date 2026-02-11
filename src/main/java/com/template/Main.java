@@ -1,46 +1,61 @@
 package com.template;
 
-import java.util.ArrayList;
+import java.nio.file.Path;
 import java.util.List;
-import java.util.Random;
+import java.util.Objects;
 
 public class Main {
-    private static final int ARRAY_SIZE = 100000;
-    private static final int ITERATIONS = 1000;
-    
-    public static void main(String[] args) {
-        System.out.println("Starting profiling demo application...");
-        System.out.println("JDK Version: " + System.getProperty("java.version"));
-        
-        performBubbleSort();
-        
-        System.out.println("Application completed successfully.");
+
+    private static final int DEFAULT_N = 3000;
+    private static final int MIN_VALUE = -100000;
+    private static final int MAX_VALUE = 100000;
+    private static final Path DEFAULT_OUT = Path.of("data", "numeros.txt");
+
+    private final NumberFileManager fileManager;
+
+    public Main() {
+        this(new NumberFileManager());
     }
-    
-    private static void performBubbleSort() {
-        System.out.println("Performing bubble sort...");
-        Random random = new Random();
-        int[] array = new int[ARRAY_SIZE / 10];
-        
-        for (int i = 0; i < array.length; i++) {
-            array[i] = random.nextInt(1000);
-        }
-        
-        for (int i = 0; i < array.length - 1; i++) {
-            for (int j = 0; j < array.length - i - 1; j++) {
-                if (array[j] > array[j + 1]) {
-                    swap(array, j, j+1);
-                }
+
+    public Main(NumberFileManager fileManager) {
+        this.fileManager = Objects.requireNonNull(fileManager, "fileManager no puede ser null");
+    }
+
+    public static void main(String[] args) throws Exception {
+        new Main().run(args);
+    }
+
+    void run(String[] args) throws Exception {
+        int n = parseCount(args);
+        Path out = parseOutputPath(args);
+
+        List<Integer> nums = fileManager.generateRandomIntegers(n, MIN_VALUE, MAX_VALUE);
+        fileManager.writeNumbersToFile(out, nums);
+
+        printSummary(nums, out);
+    }
+
+    private int parseCount(String[] args) {
+        if (args != null && args.length >= 1 && !args[0].isBlank()) {
+            int n = Integer.parseInt(args[0]);
+            if (n < 1 || n > NumberFileManager.MAX_N) {
+                throw new IllegalArgumentException("n debe estar entre 1 y " + NumberFileManager.MAX_N);
             }
+            return n;
         }
-        
-        System.out.println("Bubble sort completed.");
+        return DEFAULT_N;
     }
 
-    private static void swap(int[] array, int i, int j) {
-        int temp = array[i];
-        array[i] = array[j];
-        array[j] = temp; 
+    private Path parseOutputPath(String[] args) {
+        if (args != null && args.length >= 2 && !args[1].isBlank()) {
+            return Path.of(args[1]);
+        }
+        return DEFAULT_OUT;
     }
 
+    private void printSummary(List<Integer> nums, Path out) {
+        System.out.println("Listo");
+        System.out.println("Cantidad: " + nums.size());
+        System.out.println("Archivo: " + out.toAbsolutePath());
+    }
 }
