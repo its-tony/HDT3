@@ -1,26 +1,33 @@
 package com.template;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.io.TempDir;
 
-/**
- * Unit tests for the Main class.
- * These tests verify the correctness of the various operations
- * performed by the Main class.
- */
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class MainTest {
+
     @Test
-    @DisplayName("Test that main method runs without exceptions")
-    public void testMainRuns() {
-        // This test verifies that the main method can be executed
-        // without throwing exceptions. In a real scenario, you might
-        // want to refactor Main to be more testable.
-        assertDoesNotThrow(() -> {
-            // We can't easily test main() directly without refactoring,
-            // but we can test that the class loads correctly
-            Main main = new Main();
-            assertNotNull(main);
-        });
+    void runGeneratesNumbersFileAndBenchmarkCsv(@TempDir Path tempDir) throws Exception {
+        Path numbers = tempDir.resolve("numeros.txt");
+        Path csv = tempDir.resolve("benchmark.csv");
+
+        Main main = new Main();
+        main.run(new String[] {"30", numbers.toString(), csv.toString(), "10", "1"});
+
+        assertTrue(Files.exists(numbers));
+        assertTrue(Files.exists(csv));
+
+        List<String> numbersLines = Files.readAllLines(numbers);
+        assertEquals(30, numbersLines.size());
+
+        List<String> csvLines = Files.readAllLines(csv);
+        assertTrue(csvLines.size() > 1);
+        assertEquals("size,scenario,algorithm,run,time_nanos,time_millis", csvLines.get(0));
     }
 }
